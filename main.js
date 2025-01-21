@@ -14,7 +14,7 @@ const $$ = document.querySelectorAll.bind(document);
 
 function Modal () {
     this.openModal = (options = {}) => {
-        const {templateId} = options;
+        const {templateId, allowBackdropClose = true} = options;
         const template = $(`#${templateId}`);
         if(!template) {
             console.error(`${templateId} does not exist`);
@@ -51,21 +51,31 @@ function Modal () {
         closeBtn.addEventListener('click',() => {
             this.closeModal(backdrop);
         });
-        backdrop.onclick = (e) => {
-            if(e.target === backdrop) {
-                this.closeModal(backdrop);
-            }
-        };
+
+        if (allowBackdropClose) {
+            backdrop.onclick = (e) => {
+                if(e.target === backdrop) {
+                    this.closeModal(backdrop);
+                }
+            };
+        }
         document.addEventListener('keydown', (e) => {
             if(e.key === 'Escape') {
                 this.closeModal(backdrop);
             }
         });
+
+        // Disable scrolling
+        document.body.classList.add('no-scroll');
+        return backdrop;
     };
     this.closeModal = (modalElement) => {
         modalElement.classList.remove('show');
         modalElement.ontransitionend = () => {
             modalElement.remove();
+
+            // Enable scrolling
+            document.body.classList.remove('no-scroll');
         };
     }
 };
@@ -79,7 +89,19 @@ $('#open-modal-1').onclick = () => {
 }
 
 $('#open-modal-2').onclick = () => {
-    modal.openModal({
+    const modalElement = modal.openModal({
         templateId: `modal-2`,
+        allowBackdropClose: false,
     });
+    // get elements in Modal
+    const form = modalElement.querySelector('#login-form');
+    if (form) {
+        form.onsubmit = e => {
+            e.preventDefault();
+            const formData = {
+                email: $('#email').value.trim(),
+                password: $('#password').value.trim()
+            }
+        }
+    }
 }
