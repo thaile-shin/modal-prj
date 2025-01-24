@@ -13,6 +13,27 @@ const $$ = document.querySelectorAll.bind(document);
 </div> */}
 
 function Modal () {
+    // Caculate scrollbar width
+    function getScrollbarWidth () {
+        if(getScrollbarWidth.value) return getScrollbarWidth.value;
+
+        const div = document.createElement('div');
+        Object.assign(div.style,{
+            overflow: 'scroll',
+            position: 'absolute',
+            top: '-9999px',
+        });
+        document.body.appendChild(div);
+
+        const scrollbarWidth = div.offsetWidth - div.clientWidth;
+
+        document.body.removeChild(div);
+
+        getScrollbarWidth.value = scrollbarWidth
+
+        return scrollbarWidth;
+    };
+
     this.openModal = (options = {}) => {
         const {templateId, allowBackdropClose = true} = options;
         const template = $(`#${templateId}`);
@@ -67,7 +88,7 @@ function Modal () {
 
         // Disable scrolling
         document.body.classList.add('no-scroll');
-        document.body.style.paddingRight = getScrollbarWidth + 'px';
+        document.body.style.paddingRight = getScrollbarWidth() + 'px';
         return backdrop;
     };
     this.closeModal = (modalElement) => {
@@ -105,22 +126,4 @@ $('#open-modal-2').onclick = () => {
             }
         }
     }
-}
-
-// Caculate scrollbar width
-function getScrollbarWidth () {
-    const div = document.createElement('div');
-    Object.assign(div.style,{
-        overflow: 'scroll',
-        position: 'absolute',
-        top: '-9999px',
-    })
-
-    document.body.appendChild(div);
-
-    const scrollbarWidth = div.offsetWidth - div.clientWidth;
-
-    document.body.removeChild(div);
-
-    return scrollbarWidth;
 };
