@@ -20,6 +20,8 @@ function Modal(options = {}) {
         destroyOnClose = true,
         cssClass = [],
         closeMethod = ["button", "overlay", "escape"],
+        onOpen,
+        onClose,
     } = options;
     const template = $(`#${templateId}`);
     if (!template) {
@@ -98,6 +100,12 @@ function Modal(options = {}) {
             this._backdrop.classList.add("show");
         }, 0);
 
+        this._backdrop.ontransitionend = (e) => {
+            if (e.propertyName !== 'transform') return;
+
+            if(typeof onOpen === 'function') onOpen();
+        }
+
         // Attach event listener
         if (this._allowBackdropClose) {
             this._backdrop.onclick = (e) => {
@@ -121,7 +129,8 @@ function Modal(options = {}) {
     };
     this.close = (destroy = destroyOnClose) => {
         this._backdrop.classList.remove("show");
-        this._backdrop.ontransitionend = () => {
+        this._backdrop.ontransitionend = (e) => {
+            if (e.propertyName !== 'transform') return;
             if(this._backdrop && destroy) {
                 this._backdrop.remove();
                 this._backdrop = null;
@@ -129,6 +138,9 @@ function Modal(options = {}) {
 
             // Enable scrolling
             document.body.classList.remove("no-scroll");
+            document.body.style.padding = "";
+
+            if(typeof onClose === 'function') onClose();
         };
     };
 
@@ -140,6 +152,12 @@ function Modal(options = {}) {
 const modal1 = new Modal({
     templateId: `modal-1`,
     destroyOnClose: false,
+    onOpen : () => {
+        console.log('Modal 1 Opened');
+    },
+    onClose : () => {
+        console.log('Modal 1 Closed');
+    },
 });
 
 $("#open-modal-1").onclick = () => {
@@ -148,6 +166,12 @@ $("#open-modal-1").onclick = () => {
 const modal2 = new Modal({
     templateId: `modal-2`,
     cssClass: ["class1", "class2", "class3"],
+    onOpen : () => {
+        console.log('Modal 2 Opened');
+    },
+    onClose : () => {
+        console.log('Modal 2 Closed');
+    },
 });
 $("#open-modal-2").onclick = () => {
     const modalElement = modal2.open();
