@@ -58,7 +58,7 @@ main {
     position: relative;
     width: min(600px, 90%);
     border-radius: 10px;
-    padding: 28px;
+    padding: 20px 20px 0;
     background: #fff;
     transform: scale(0);
     transition: transform 0.3s ease-in;
@@ -84,6 +84,10 @@ main {
     margin: 20px 0;
     max-height: 80vh;
     overflow-y: auto;
+}
+
+.modal-footer {
+    padding: 20px 0;
 }
 
 .no-scroll {

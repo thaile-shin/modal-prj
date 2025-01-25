@@ -18,6 +18,7 @@ function Modal(options = {}) {
     const {
         templateId,
         destroyOnClose = true,
+        footer = false,
         cssClass = [],
         closeMethod = ["button", "overlay", "escape"],
         onOpen,
@@ -62,8 +63,8 @@ function Modal(options = {}) {
         const container = document.createElement("div");
         container.className = "modal-container";
 
-        cssClass.forEach(className => {
-            if (typeof className === 'string') {
+        cssClass.forEach((className) => {
+            if (typeof className === "string") {
                 container.classList.add(className);
             }
         });
@@ -87,24 +88,48 @@ function Modal(options = {}) {
         // Append content and elements
         modalContent.append(content);
         container.append(modalContent);
+
+        if (footer) {
+            this._modalFooter = document.createElement("div");
+            this._modalFooter.className = "modal-footer";
+
+            if(this._footerContent) {
+                this._modalFooter.innerHTML = this._footerContent;
+            }
+            container.append(this._modalFooter);
+        }
+
         this._backdrop.append(container);
         document.body.append(this._backdrop);
+    };
+
+    this.setFooterContent = (html) => {
+        this._footerContent = html;
+        if(this._modalFooter) {
+            this._modalFooter.innerHTML = html;
+        }
+
     }
 
     this.open = () => {
-        if(!this._backdrop) {
+        if (!this._backdrop) {
             this.build();
         }
+
+        this._onTransitionEnd = (callback) => {
+            this._backdrop.ontransitionend = (e) => {
+                if (e.propertyName !== "transform") return;
+                if (typeof callback === "function") callback();
+            };
+        };
+
+        this._onTransitionEnd(() => {
+            if (typeof onOpen === "function") onOpen();
+        });
 
         setTimeout(() => {
             this._backdrop.classList.add("show");
         }, 0);
-
-        this._backdrop.ontransitionend = (e) => {
-            if (e.propertyName !== 'transform') return;
-
-            if(typeof onOpen === 'function') onOpen();
-        }
 
         // Attach event listener
         if (this._allowBackdropClose) {
@@ -129,34 +154,35 @@ function Modal(options = {}) {
     };
     this.close = (destroy = destroyOnClose) => {
         this._backdrop.classList.remove("show");
-        this._backdrop.ontransitionend = (e) => {
-            if (e.propertyName !== 'transform') return;
-            if(this._backdrop && destroy) {
+
+        this._onTransitionEnd(() => {
+            if (this._backdrop && destroy) {
                 this._backdrop.remove();
                 this._backdrop = null;
+                this._modalFooter = null;
             }
 
             // Enable scrolling
             document.body.classList.remove("no-scroll");
             document.body.style.padding = "";
 
-            if(typeof onClose === 'function') onClose();
-        };
+            if (typeof onClose === "function") onClose();
+        });
     };
 
     this.destroy = () => {
         this.close(true);
-    }
+    };
 }
 
 const modal1 = new Modal({
     templateId: `modal-1`,
     destroyOnClose: false,
-    onOpen : () => {
-        console.log('Modal 1 Opened');
+    onOpen: () => {
+        console.log("Modal 1 Opened");
     },
-    onClose : () => {
-        console.log('Modal 1 Closed');
+    onClose: () => {
+        console.log("Modal 1 Closed");
     },
 });
 
@@ -166,11 +192,11 @@ $("#open-modal-1").onclick = () => {
 const modal2 = new Modal({
     templateId: `modal-2`,
     cssClass: ["class1", "class2", "class3"],
-    onOpen : () => {
-        console.log('Modal 2 Opened');
+    onOpen: () => {
+        console.log("Modal 2 Opened");
     },
-    onClose : () => {
-        console.log('Modal 2 Closed');
+    onClose: () => {
+        console.log("Modal 2 Closed");
     },
 });
 $("#open-modal-2").onclick = () => {
@@ -187,3 +213,17 @@ $("#open-modal-2").onclick = () => {
         };
     }
 };
+
+const modal3 = new Modal({
+    templateId: `modal-3`,
+    footer: true,
+    onOpen: () => {
+        console.log("Modal 3 Opened");
+    },
+    onClose: () => {
+        console.log("Modal 3 Closed");
+    },
+});
+modal3.setFooterContent('<h2> Footer Content </h2>');
+modal3.open();
+modal3.setFooterContent('<h2> Footer Content new </h2>');
