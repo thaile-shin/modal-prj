@@ -87,7 +87,28 @@ main {
 }
 
 .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
     padding: 20px 0;
+}
+
+.modal-btn {
+    padding: 8px 20px;
+    color: #fff;
+    background: #464e63;
+}
+
+.modal-btn.primary {
+    background: #2b95e6;
+}
+
+.modal-btn.danger {
+    background: #e74e0d;
+}
+
+.modal-btn.pull-left {
+    margin-right: auto;
 }
 
 .no-scroll {

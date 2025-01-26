@@ -93,9 +93,14 @@ function Modal(options = {}) {
             this._modalFooter = document.createElement("div");
             this._modalFooter.className = "modal-footer";
 
-            if(this._footerContent) {
+            if (this._footerContent) {
                 this._modalFooter.innerHTML = this._footerContent;
             }
+
+            this._footerButtons.forEach((button) => {
+                this._modalFooter.append(button);
+            });
+
             container.append(this._modalFooter);
         }
 
@@ -105,11 +110,20 @@ function Modal(options = {}) {
 
     this.setFooterContent = (html) => {
         this._footerContent = html;
-        if(this._modalFooter) {
+        if (this._modalFooter) {
             this._modalFooter.innerHTML = html;
         }
+    };
 
-    }
+    this._footerButtons = [];
+    this.addFooterBtn = (title, cssClass, callbackFn) => {
+        const button = document.createElement("button");
+        button.className = cssClass;
+        button.innerHTML = title;
+        button.onclick = callbackFn;
+
+        this._footerButtons.push(button);
+    };
 
     this.open = () => {
         if (!this._backdrop) {
@@ -216,6 +230,7 @@ $("#open-modal-2").onclick = () => {
 
 const modal3 = new Modal({
     templateId: `modal-3`,
+    closeMethod: [],
     footer: true,
     onOpen: () => {
         console.log("Modal 3 Opened");
@@ -224,6 +239,20 @@ const modal3 = new Modal({
         console.log("Modal 3 Closed");
     },
 });
-modal3.setFooterContent('<h2> Footer Content </h2>');
+// modal3.setFooterContent('<h2> Footer Content </h2>');
+// modal3.setFooterContent('<h2> Footer Content new </h2>');
+
+// modal3.addFooterBtn("Danger", "modal-btn danger pull-left", (e) => {
+//     alert("Danger clicked");
+// });
+
+modal3.addFooterBtn("Cancel", "modal-btn", (e) => {
+    modal3.close();
+});
+
+modal3.addFooterBtn("<span>Agree</span>", "modal-btn primary", (e) => {
+    // Do something
+    modal3.close();
+});
+
 modal3.open();
-modal3.setFooterContent('<h2> Footer Content new </h2>');
