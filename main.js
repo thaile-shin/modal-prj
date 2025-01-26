@@ -1,18 +1,7 @@
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
 
-{
-    /* <div class="modal-backdrop">
-    <div class="modal-container">
-        <button class="modal-close">&times;</button>
-        <div class="modal-content">
-            <p>
-                .....
-            </p>
-        </div>
-    </div>
-</div> */
-}
+Modal.elements = [];
 
 function Modal(options = {}) {
     const {
@@ -126,6 +115,8 @@ function Modal(options = {}) {
     };
 
     this.open = () => {
+        Modal.elements.push(this);
+
         if (!this._backdrop) {
             this.build();
         }
@@ -153,12 +144,16 @@ function Modal(options = {}) {
                 }
             };
         }
+
+        this._handleEscapeKey = (e) => {
+            const lastModal = Modal.elements[Modal.elements.length - 1];
+            if (e.key === "Escape" && this === lastModal) {
+                this.close();
+            }
+        };
+
         if (this._allowEscapeClose) {
-            document.addEventListener("keydown", (e) => {
-                if (e.key === "Escape") {
-                    this.close();
-                }
-            });
+            document.addEventListener("keydown", this._handleEscapeKey);
         }
 
         // Disable scrolling
@@ -167,7 +162,13 @@ function Modal(options = {}) {
         return this._backdrop;
     };
     this.close = (destroy = destroyOnClose) => {
+        Modal.elements.pop(this);
+
         this._backdrop.classList.remove("show");
+
+        if (this._allowEscapeClose) {
+            document.removeEventListener("keydown", this._handleEscapeKey);
+        }
 
         this._onTransitionEnd(() => {
             if (this._backdrop && destroy) {
@@ -177,8 +178,10 @@ function Modal(options = {}) {
             }
 
             // Enable scrolling
-            document.body.classList.remove("no-scroll");
-            document.body.style.padding = "";
+            if (!Modal.elements.length) {
+                document.body.classList.remove("no-scroll");
+                document.body.style.padding = "";
+            }
 
             if (typeof onClose === "function") onClose();
         });
@@ -254,5 +257,6 @@ modal3.addFooterBtn("<span>Agree</span>", "modal-btn primary", (e) => {
     // Do something
     modal3.close();
 });
-
-modal3.open();
+$("#open-modal-3").onclick = () => {
+    modal3.open();
+};
