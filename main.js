@@ -9,21 +9,21 @@ function Popzy(options = {}) {
             destroyOnClose: true,
             footer: false,
             cssClass: [],
-            closeMethod: ["button", "overlay", "escape"],
+            closeMethods: ["button", "overlay", "escape"],
         },
         options
     );
 
     this.template = $(`#${this.opt.templateId}`);
     if (!this.template) {
-        console.error(`${this.opt.templateId} does not exist`);
+        console.error(`$#{this.opt.templateId} does not exist`);
         return;
     }
 
-    const { closeMethod } = this.opt;
-    this._allowButtonClose = closeMethod.includes("button");
-    this._allowBackdropClose = closeMethod.includes("overlay");
-    this._allowEscapeClose = closeMethod.includes("escape");
+    const { closeMethods } = this.opt;
+    this._allowButtonClose = closeMethods.includes("button");
+    this._allowBackdropClose = closeMethods.includes("overlay");
+    this._allowEscapeClose = closeMethods.includes("escape");
 
     this._footerButtons = [];
 
@@ -115,11 +115,13 @@ Popzy.prototype.open = function () {
         this._build();
     }
 
-    this._onTransitionEnd(this.opt.onOpen);
-
     setTimeout(() => {
         this._backdrop.classList.add("popzy--show");
     }, 0);
+
+    // Disable scrolling
+    document.body.classList.add("popzy--no-scroll");
+    document.body.style.paddingRight = this._getScrollbarWidth() + "px";
 
     // Attach event listener
     if (this._allowBackdropClose) {
@@ -134,9 +136,8 @@ Popzy.prototype.open = function () {
         document.addEventListener("keydown", this._handleEscapeKey);
     }
 
-    // Disable scrolling
-    document.body.classList.add("popzy--no-scroll");
-    document.body.style.paddingRight = this._getScrollbarWidth() + "px";
+    this._onTransitionEnd(this.opt.onOpen);
+
     return this._backdrop;
 };
 
@@ -155,7 +156,7 @@ Popzy.prototype._onTransitionEnd = function (callback) {
 };
 
 Popzy.prototype.close = function (destroy = this.opt.destroyOnClose) {
-    Popzy.elements.pop(this);
+    Popzy.elements.pop();
     this._backdrop.classList.remove("popzy--show");
 
     if (this._allowEscapeClose) {
@@ -172,7 +173,7 @@ Popzy.prototype.close = function (destroy = this.opt.destroyOnClose) {
         // Enable scrolling
         if (!Popzy.elements.length) {
             document.body.classList.remove("popzy--no-scroll");
-            document.body.style.padding = "";
+            document.body.style.paddingRight = "";
         }
 
         if (typeof this.opt.onClose === "function") this.opt.onClose();
@@ -185,7 +186,7 @@ Popzy.prototype.destroy = function () {
 
 // Caculate scrollbar width
 Popzy.prototype._getScrollbarWidth = function () {
-    if (this._getScrollbarWidth) return this._getScrollbarWidth;
+    if (this._scrollbarWidth) return this._scrollbarWidth;
     const div = document.createElement("div");
     Object.assign(div.style, {
         overflow: "scroll",
@@ -194,11 +195,11 @@ Popzy.prototype._getScrollbarWidth = function () {
     });
     document.body.appendChild(div);
 
-    this._getScrollbarWidth = div.offsetWidth - div.clientWidth;
+    this._scrollbarWidth = div.offsetWidth - div.clientWidth;
 
     document.body.removeChild(div);
 
-    return this._getScrollbarWidth;
+    return this._scrollbarWidth;
 };
 
 const modal1 = new Popzy({
@@ -242,7 +243,7 @@ $("#open-modal-2").onclick = () => {
 
 const modal3 = new Popzy({
     templateId: `modal-3`,
-    closeMethod: [],
+    closeMethods: [],
     footer: true,
     onOpen: () => {
         console.log("Modal 3 Opened");
